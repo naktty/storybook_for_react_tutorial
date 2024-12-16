@@ -1,0 +1,11 @@
+services:
+  app:
+    image: node:22.7.0
+    container_name: storybook
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "6006:6006"
+      - "5173:5173"
+    tty: true
