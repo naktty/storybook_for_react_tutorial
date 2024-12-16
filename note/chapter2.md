@@ -112,3 +112,55 @@ fn()を使うと、クリックされたときにStorybook UIのActionsパネル
 コンポーネントのすべての組み合わせに同じアクションセットを渡す必要があるので、それらを1つのActionsData変数にまとめて、毎回ストーリー定義に渡すと便利です。コンポーネントが必要とするActionsDataをバンドルするもう一つの良い点は、後で説明するように、それらをエクスポートして、このコンポーネントを再利用するコンポーネントのストーリーで使用できることです。
 
 ストーリーを作成するとき、コンポーネントが期待するタスクの形を構築するためにベースタスクのargを使用する。通常、実際のデータがどのように見えるかをモデル化する。繰り返しになるが、このシェイプをエクスポートすることで、後のストーリーで再利用できるようになる。
+
+## 設定
+Storybookの設定ファイルをいくつか変更して、最近作成されたストーリーを認識し、アプリケーションのCSSファイル（src/index.cssにあります）を使用できるようにします。
+
+まず、Storybookの設定ファイル（.storybook/main.js）を以下のように変更してください
+
+```javascript
+// .storybook/main.js
+
+/** @type { import('@storybook/react-vite').StorybookConfig } */
+const config = {
+ stories: ['../src/components/**/*.stories.@(js|jsx)'],
+  staticDirs: ['../public'],
+  addons: [
+    '@storybook/addon-links',
+    '@storybook/addon-essentials',
+    '@storybook/addon-interactions',
+  ],
+  framework: {
+    name: '@storybook/react-vite',
+    options: {},
+  },
+};
+export default config;
+```
+
+上記の変更が完了したら、.storybookフォルダの中のpreview.jsを以下のように変更してください
+
+```javascript
+// .storybook/preview.js
+
+import '../src/index.css';
+
+//👇 Configures Storybook to log the actions( onArchiveTask and onPinTask ) in the UI.
+/** @type { import('@storybook/react').Preview } */
+const preview = {
+  parameters: {
+    controls: {
+      matchers: {
+        color: /(background|color)$/i,
+        date: /Date$/,
+      },
+    },
+  },
+};
+
+export default preview;
+```
+
+パラメータは通常、Storybookの機能やアドオンの動作を制御するために使用されます。今回のケースでは、そのような目的で使用することはありません。代わりに、アプリケーションの CSS ファイルをインポートします。
+
+これを行った後、Storybookサーバを再起動すると、3つのTask状態のテストケースが得られるはずです
