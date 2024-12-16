@@ -11,3 +11,104 @@
 * state - タスクが現在どのリストにあり、チェックされているか？
 
 タスクのビルドを始めるにあたり、まず、上でスケッチしたさまざまなタイプのタスクに対応するテストステートを書きます。それから、Storybookを使って、モックデータを使ってコンポーネントを単独で作成します。各ステートでコンポーネントの外観を手動でテストしながら進めていきます。
+
+## セットアップ
+まず、タスクコンポーネントとそれに付随するストーリーファイル（src/components/Task.jsxとsrc/components/Task.stories.jsx）を作成しましょう。
+
+まず、タスクの基本的な実装から始めましょう。必要な属性と、タスクに対してできる2つのアクション（リスト間でタスクを移動させる）を取り込むだけです
+
+```jsx
+// src/components/Task.jsx
+
+export default function Task({ task: { id, title, state }, onArchiveTask, onPinTask }) {
+  return (
+    <div className="list-item">
+      <label htmlFor={`title-${id}`} aria-label={title}>
+        <input type="text" value={title} readOnly={true} name="title" id={`title-${id}`} />
+      </label>
+    </div>
+  );
+}
+```
+
+上では、Todosアプリケーションの既存のHTML構造に基づいて、Taskのためのわかりやすいマークアップをレンダリングしています。
+
+以下では、ストーリーファイルにTaskの3つのテスト状態を作成します
+
+```jsx
+// src/components/Task.stories.jsx
+
+
+import { fn } from "@storybook/test";
+
+import Task from './Task';
+
+export const ActionsData = {
+  onArchiveTask: fn(),
+  onPinTask: fn(),
+};
+
+export default {
+  component: Task,
+  title: 'Task',
+  tags: ['autodocs'],
+  //👇 Our exports that end in "Data" are not stories.
+  excludeStories: /.*Data$/,
+  args: {
+    ...ActionsData,
+  },
+};
+
+export const Default = {
+  args: {
+    task: {
+      id: '1',
+      title: 'Test Task',
+      state: 'TASK_INBOX',
+    },
+  },
+};
+
+export const Pinned = {
+  args: {
+    task: {
+      ...Default.args.task,
+      state: 'TASK_PINNED',
+    },
+  },
+};
+
+export const Archived = {
+  args: {
+    task: {
+      ...Default.args.task,
+      state: 'TASK_ARCHIVED',
+    },
+  },
+};
+```
+
+💡アクションは、UIコンポーネントを単独で構築する際のインタラクションの検証に役立ちます。アプリのコンテキストで持っている関数やステートにアクセスできないことがよくあります。fn()を使って、それらをスタブしてください。
+
+Storybookには、コンポーネントとその子ストーリーの2つの基本的な構成レベルがあります。各ストーリーはコンポーネントの順列だと考えてください。1つのコンポーネントにつき、必要な数のストーリーを持つことができます。
+
+* コンポーネント
+  * ストーリー
+  * ストーリー
+  * ストーリー
+
+STORYBOOKに文書化とテストを行っているコンポーネントを伝えるために、以下のようなデフォルトのエクスポートを作成します：
+
+* component -- コンポーネントそのもの
+* title -- Storybookのサイドバーでコンポーネントをグループ化または分類する方法
+* tags -- コンポーネントのドキュメントを自動的に生成する
+* excludeStories -- ストーリーに必要だが、ストーリーブックでレンダリングされるべきではない追加情報
+* args -- コンポーネントがカスタムイベントをモックアウトするアクションの引数を定義します。
+
+ストーリーを定義するために、Component Story Format 3（別名 CSF3 ）を使用して各テストケースを作成します。このフォーマットは、各テストケースを簡潔に作成するように設計されています。各コンポーネントの状態を含むオブジェクトをエクスポートすることで、テストをより直感的に定義し、ストーリーをより効率的に作成、再利用することができます。
+
+fn()を使うと、クリックされたときにStorybook UIのActionsパネルに表示されるコールバックを作成できます。そのため、ピンボタンを作成するときに、ボタンのクリックが成功したかどうかをUIで判断できるようになります。
+
+コンポーネントのすべての組み合わせに同じアクションセットを渡す必要があるので、それらを1つのActionsData変数にまとめて、毎回ストーリー定義に渡すと便利です。コンポーネントが必要とするActionsDataをバンドルするもう一つの良い点は、後で説明するように、それらをエクスポートして、このコンポーネントを再利用するコンポーネントのストーリーで使用できることです。
+
+ストーリーを作成するとき、コンポーネントが期待するタスクの形を構築するためにベースタスクのargを使用する。通常、実際のデータがどのように見えるかをモデル化する。繰り返しになるが、このシェイプをエクスポートすることで、後のストーリーで再利用できるようになる。
