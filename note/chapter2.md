@@ -164,3 +164,62 @@ export default preview;
 パラメータは通常、Storybookの機能やアドオンの動作を制御するために使用されます。今回のケースでは、そのような目的で使用することはありません。代わりに、アプリケーションの CSS ファイルをインポートします。
 
 これを行った後、Storybookサーバを再起動すると、3つのTask状態のテストケースが得られるはずです
+
+## ステートを構築する
+Storybookのセットアップ、スタイルのインポート、テストケースのビルドができたので、デザインに合わせてコンポーネントのHTMLの実装をすぐに始めることができます。
+
+現時点では、コンポーネントはまだ初歩的なものです。まずは、あまり細かいことは考えずに、デザインを実現するコードを書きましょう
+
+```jsx
+// src/components/Task.jsx
+
+export default function Task({ task: { id, title, state }, onArchiveTask, onPinTask }) {
+  return (
+    <div className={`list-item ${state}`}>
+      <label
+        htmlFor={`archiveTask-${id}`}
+        aria-label={`archiveTask-${id}`}
+        className="checkbox"
+      >
+        <input
+          type="checkbox"
+          disabled={true}
+          name="checked"
+          id={`archiveTask-${id}`}
+          checked={state === "TASK_ARCHIVED"}
+        />
+        <span
+          className="checkbox-custom"
+          onClick={() => onArchiveTask(id)}
+        />
+      </label>
+
+      <label htmlFor={`title-${id}`} aria-label={title} className="title">
+        <input
+          type="text"
+          value={title}
+          readOnly={true}
+          name="title"
+          id={`title-${id}`}
+          placeholder="Input title"
+        />
+      </label>
+      {state !== "TASK_ARCHIVED" && (
+        <button
+          className="pin-button"
+          onClick={() => onPinTask(id)}
+          id={`pinTask-${id}`}
+          aria-label={`pinTask-${id}`}
+          key={`pinTask-${id}`}
+        >
+          <span className={`icon-star`} />
+        </button>
+      )}
+    </div>
+  );
+}
+```
+
+上で追加したマークアップと、先ほどインポートしたCSSを組み合わせると、以下のようなUIになる
+
+![alt text](../images/image3.png)
