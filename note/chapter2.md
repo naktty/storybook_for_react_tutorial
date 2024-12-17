@@ -223,3 +223,77 @@ export default function Task({ task: { id, title, state }, onArchiveTask, onPinT
 上で追加したマークアップと、先ほどインポートしたCSSを組み合わせると、以下のようなUIになる
 
 ![alt text](../images/image3.png)
+
+## データ要件を指定する
+ReactでpropTypesを使用して、コンポーネントが期待するデータの形を指定するのがベストプラクティスだ。自己文書化できるだけでなく、問題の早期発見にも役立ちます。
+
+```jsx
+// src/components/Task.jsx
+
+import PropTypes from 'prop-types';
+
+export default function Task({ task: { id, title, state }, onArchiveTask, onPinTask }) {
+  return (
+    <div className={`list-item ${state}`}>
+      <label
+        htmlFor={`archiveTask-${id}`}
+        aria-label={`archiveTask-${id}`}
+        className="checkbox"
+      >
+        <input
+          type="checkbox"
+          disabled={true}
+          name="checked"
+          id={`archiveTask-${id}`}
+          checked={state === "TASK_ARCHIVED"}
+        />
+        <span
+          className="checkbox-custom"
+          onClick={() => onArchiveTask(id)}
+        />
+      </label>
+
+      <label htmlFor={`title-${id}`} aria-label={title} className="title">
+        <input
+          type="text"
+          value={title}
+          readOnly={true}
+          name="title"
+          id={`title-${id}`}
+          placeholder="Input title"
+        />
+      </label>
+      {state !== "TASK_ARCHIVED" && (
+        <button
+          className="pin-button"
+          onClick={() => onPinTask(id)}
+          id={`pinTask-${id}`}
+          aria-label={`pinTask-${id}`}
+          key={`pinTask-${id}`}
+        >
+          <span className={`icon-star`} />
+        </button>
+      )}
+    </div>
+  );
+}
+Task.propTypes = {
+  /** Composition of the task */
+  task: PropTypes.shape({
+    /** Id of the task */
+    id: PropTypes.string.isRequired,
+    /** Title of the task */
+    title: PropTypes.string.isRequired,
+    /** Current state of the task */
+    state: PropTypes.string.isRequired,
+  }),
+  /** Event to change the task to archived */
+  onArchiveTask: PropTypes.func,
+  /** Event to change the task to pinned */
+  onPinTask: PropTypes.func,
+};
+```
+
+これで、Taskコンポーネントが誤用された場合、開発時に警告が表示されるようになります。
+
+💡 同じ目的を達成する別の方法は、TypeScriptのようなJavaScriptの型システムを使って、コンポーネントのプロパティ用の型を作成することです。
