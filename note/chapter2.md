@@ -302,3 +302,55 @@ Task.propTypes = {
 これで、サーバーを必要とせず、フロントエンドのアプリケーション全体を実行することなく、コンポーネントを構築することに成功しました。次のステップは、残りのTaskboxコンポーネントを1つずつ同じようにビルドしていくことです。
 
 お分かりのように、コンポーネントを分離して作り始めるのは簡単で速いです。可能性のあるすべての状態を掘り下げてテストすることができるので、バグが少なく、より洗練された質の高いUIを作ることが期待できます。
+
+## アクセシビリティの問題を検出する
+アクセシビリティ・テストとは、WCAGルールやその他の業界で認められているベストプラクティスに基づいた一連のヒューリスティックスに対して、自動化されたツールでレンダリングされたDOMを監査することを指します。アクセシビリティテストは、視覚障害、聴覚障害、認知障害などの障害者を含む、可能な限り多くの人々がアプリケーションを使用できるようにするために、あからさまなアクセシビリティ違反を検出するQAの第一線として機能します。
+
+Storybookには公式のアクセシビリティアドオンが含まれています。Dequeのaxe-coreを搭載し、WCAGの問題の57%までキャッチできます。
+
+どのように動作するか見てみましょう！以下のコマンドを実行してアドオンをインストールします
+
+```bash
+yarn add --dev @storybook/addon-a11y
+```
+
+その後、Storybookの設定ファイル（.storybook/main.js）を更新し、有効にします
+
+```javascript
+// .storybook/main.js
+
+/** @type { import('@storybook/react-vite').StorybookConfig } */
+const config = {
+ stories: ['../src/components/**/*.stories.@(js|jsx)'],
+  staticDirs: ['../public'],
+  addons: [
+    '@storybook/addon-links',
+    '@storybook/addon-essentials',
+    '@storybook/addon-interactions',
+    '@storybook/addon-a11y',
+  ],
+  framework: {
+    name: '@storybook/react-vite',
+    options: {},
+  },
+};
+export default config;
+```
+
+最後にStorybookを再起動すると、UIで新しいアドオンが有効になります。
+
+![alt text](../images/image4.png)
+
+ストーリーを循環させると、アドオンがテスト状態の1つにアクセシビリティの問題を発見したことがわかります。Elements must have sufficient color contrast（要素には十分な色のコントラストが必要です）」というメッセージは、本質的に、タスクのタイトルと背景の間に十分なコントラストがないことを意味します。アプリケーションのCSS（src/index.cssにあります）でテキストの色を濃いグレーに変更すれば、すぐに修正できます。
+
+```css
+/* src/index.css */
+
+.list-item.TASK_ARCHIVED input[type="text"] {
+  color: #4a5568;
+  text-decoration: line-through;
+}
+```
+以上です！UIがアクセシブルになるための第一歩を踏み出した。アプリケーションに複雑さを追加していけば、追加のツールやテスト環境を立ち上げることなく、他のすべてのコンポーネントに対してこのプロセスを繰り返すことができます。
+
+💡 gitで変更をコミットすることを忘れないでください！
