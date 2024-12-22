@@ -162,3 +162,129 @@ export default function TaskList() {
 これで、Reduxストアから取得した実際のデータがコンポーネントに入力されるようになったので、それをsrc/App.jsに配線して、そこでコンポーネントをレンダリングすることもできた。しかし、今はそれを控えて、コンポーネント駆動の旅を続けよう。
 
 心配はいらない。次の章で説明する。
+
+## デコレータによるコンテキストの提供
+この変更により、ストーリーブックのストーリーは動かなくなりました。なぜなら、タスクリストはReduxストアに依存してタスクを取得・更新するため、接続コンポーネントになってしまったからです。
+
+この問題を解決するには、様々なアプローチを使うことができる。しかし、このアプリは非常に単純なので、前の章でやったようなデコレーターに頼ることができ、ストーリーブックのストーリーでモックストアを提供することができる
+
+```jsx
+// src/components/TaskList.stories.jsx
+
+import TaskList from './TaskList';
+
+import * as TaskStories from './Task.stories';
+
+import { Provider } from 'react-redux';
+
+import { configureStore, createSlice } from '@reduxjs/toolkit';
+
+// A super-simple mock of the state of the store
+export const MockedState = {
+  tasks: [
+    { ...TaskStories.Default.args.task, id: '1', title: 'Task 1' },
+    { ...TaskStories.Default.args.task, id: '2', title: 'Task 2' },
+    { ...TaskStories.Default.args.task, id: '3', title: 'Task 3' },
+    { ...TaskStories.Default.args.task, id: '4', title: 'Task 4' },
+    { ...TaskStories.Default.args.task, id: '5', title: 'Task 5' },
+    { ...TaskStories.Default.args.task, id: '6', title: 'Task 6' },
+  ],
+  status: 'idle',
+  error: null,
+};
+
+// A super-simple mock of a redux store
+const Mockstore = ({ taskboxState, children }) => (
+  <Provider
+    store={configureStore({
+      reducer: {
+        taskbox: createSlice({
+          name: 'taskbox',
+          initialState: taskboxState,
+          reducers: {
+            updateTaskState: (state, action) => {
+              const { id, newTaskState } = action.payload;
+              const task = state.tasks.findIndex((task) => task.id === id);
+              if (task >= 0) {
+                state.tasks[task].state = newTaskState;
+              }
+            },
+          },
+        }).reducer,
+      },
+    })}
+  >
+    {children}
+  </Provider>
+);
+
+export default {
+  component: TaskList,
+  title: 'TaskList',
+  decorators: [(story) => <div style={{ margin: '3rem' }}>{story()}</div>],
+  tags: ['autodocs'],
+  excludeStories: /.*MockedState$/,
+};
+
+export const Default = {
+  decorators: [
+    (story) => <Mockstore taskboxState={MockedState}>{story()}</Mockstore>,
+  ],
+};
+
+export const WithPinnedTasks = {
+  decorators: [
+    (story) => {
+      const pinnedtasks = [
+        ...MockedState.tasks.slice(0, 5),
+        { id: '6', title: 'Task 6 (pinned)', state: 'TASK_PINNED' },
+      ];
+
+      return (
+        <Mockstore
+          taskboxState={{
+            ...MockedState,
+            tasks: pinnedtasks,
+          }}
+        >
+          {story()}
+        </Mockstore>
+      );
+    },
+  ],
+};
+
+export const Loading = {
+  decorators: [
+    (story) => (
+      <Mockstore
+        taskboxState={{
+          ...MockedState,
+          status: 'loading',
+        }}
+      >
+        {story()}
+      </Mockstore>
+    ),
+  ],
+};
+
+export const Empty = {
+  decorators: [
+    (story) => (
+      <Mockstore
+        taskboxState={{
+          ...MockedState,
+          tasks: [],
+        }}
+      >
+        {story()}
+      </Mockstore>
+    ),
+  ],
+};
+```
+
+💡 excludeStoriesはStorybookの設定フィールドで、モックされた状態がストーリーとして扱われるのを防ぎます。このフィールドについてはStorybookのドキュメントを参照してください。
+
+成功です！Storybookが動作し、接続されたコンポーネントにデータを供給する方法を見ることができました。次の章では、ここで学んだことをスクリーンに適用してみましょう。
