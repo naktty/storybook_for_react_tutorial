@@ -6,3 +6,6 @@ Storybookをオンラインでデプロイする方法を学びます。
 Storybookをデプロイするには、まず静的ウェブアプリとしてエクスポートする必要があります。この機能はすでにStorybookに組み込まれており、あらかじめ設定されています。
 
 yarn build-storybookを実行すると、storybook-staticディレクトリに静的なStorybookが出力されます。
+
+## ストーリーブックを公開する
+このチュートリアルでは、Storybookのメンテナによって作られた無料のパブリッシングサービス、Chromaticを使用します。Chromaticを利用することで、Storybookを安全かつセキュアにクラウド上にデプロイし、ホストすることができます。
