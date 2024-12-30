@@ -14,3 +14,68 @@ Storybookを新規にインストールすると、Controlsが最初から含ま
 
 ## アドオンが新しいStorybookワークフローをアンロック
 Storybookは素晴らしいコンポーネント駆動型の開発環境です。ControlsアドオンはStorybookをインタラクティブなドキュメントツールに進化させます。
+
+### コントロールを使ってエッジケースを見つける
+コントロールを使って、QAエンジニア、UIエンジニア、その他の関係者は、コンポーネントを限界までプッシュすることができます！次の例で、もし巨大な文字列を追加したら、タスクはどうなるでしょうか？
+
+![alt text](image.png)
+
+それは正しくない！テキストがTaskコンポーネントの境界を越えてオーバーフローしているように見えます。
+
+コントロールによって、コンポーネントへのさまざまな入力（この場合は長い文字列）をすばやく確認できるようになり、UIの問題を発見するのに必要な作業が減りました。
+
+それでは、Task.jsxにスタイルを追加して、はみ出しの問題を修正しましょう
+
+```jsx
+// src/components/Task.jsx
+
+export default function Task({ task: { id, title, state }, onArchiveTask, onPinTask }) {
+  return (
+    <div className={`list-item ${state}`}>
+      <label
+        htmlFor={`archiveTask-${id}`}
+        aria-label={`archiveTask-${id}`}
+        className="checkbox"
+      >
+        <input
+          type="checkbox"
+          disabled={true}
+          name="checked"
+          id={`archiveTask-${id}`}
+          checked={state === "TASK_ARCHIVED"}
+        />
+        <span
+          className="checkbox-custom"
+          onClick={() => onArchiveTask(id)}
+        />
+      </label>
+
+      <label htmlFor={`title-${id}`} aria-label={title} className="title">
+        <input
+          type="text"
+          value={title}
+          readOnly={true}
+          name="title"
+          id={`title-${id}`}
+          placeholder="Input title"
+          style={{ textOverflow: 'ellipsis' }}
+        />
+      </label>
+
+      {state !== "TASK_ARCHIVED" && (
+        <button
+          className="pin-button"
+          onClick={() => onPinTask(id)}
+          id={`pinTask-${id}`}
+          aria-label={`pinTask-${id}`}
+          key={`pinTask-${id}`}
+        >
+          <span className={`icon-star`} />
+        </button>
+      )}
+    </div>
+  );
+}
+```
+
+問題は解決しました！ハンサムな省略記号を使用して、テキストがタスク領域の境界に達すると切り捨てられるようになりました。
