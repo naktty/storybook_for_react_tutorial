@@ -9,6 +9,9 @@ jobs:
   chromatic:
     name: 'Run Chromatic'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: taskbox
     # Job steps
     steps:
       - uses: actions/checkout@v4
