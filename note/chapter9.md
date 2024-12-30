@@ -17,3 +17,8 @@ StorybookはReact、React Native、Vue、Angular、Svelte、その他多くの�
 * [Visual Testing Handbook](https://storybook.js.org/tutorials/visual-testing-handbook/)は、Storybookを使ったコンポーネントのビジュアルテストを深く掘り下げています。31ページの無料電子書籍。
 * [Storybook Discord チャット](https://discord.com/invite/UUt2PJb)では、Storybookコミュニティと連絡を取ることができます。他のStorybookユーザーに助けを求めたり、与えたりできます。
 * [Storybookブログ](https://storybook.js.org/blog/)では、UI開発のワークフローを効率化するための最新リリースや機能を紹介しています。
+
+## チュートリアル「ストーリーブック入門」は誰が作りましたか？
+テキスト、コード、制作はChromaticが担当しました。このチュートリアルは、Chromaticの人気チュートリアルシリーズ[「GraphQL + React」](https://www.chromatic.com/blog/graphql-react-tutorial-part-1-6/)にインスパイアされています。
+
+このようなチュートリアルや記事がもっと欲しいですか？Storybookメーリングリストに登録してください。
