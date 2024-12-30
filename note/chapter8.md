@@ -18,7 +18,7 @@ Storybookは素晴らしいコンポーネント駆動型の開発環境です�
 ### コントロールを使ってエッジケースを見つける
 コントロールを使って、QAエンジニア、UIエンジニア、その他の関係者は、コンポーネントを限界までプッシュすることができます！次の例で、もし巨大な文字列を追加したら、タスクはどうなるでしょうか？
 
-![alt text](image.png)
+![alt text](../images/image17.png)
 
 それは正しくない！テキストがTaskコンポーネントの境界を越えてオーバーフローしているように見えます。
 
@@ -79,3 +79,32 @@ export default function Task({ task: { id, title, state }, onArchiveTask, onPinT
 ```
 
 問題は解決しました！ハンサムな省略記号を使用して、テキストがタスク領域の境界に達すると切り捨てられるようになりました。
+
+### リグレッションを回避するための新しいストーリーの追加
+将来的には、コントロールズを使って同じ文字列を入力することで、この問題を手動で再現することができる。しかし、このエッジケースを紹介するストーリーを書く方が簡単だ。そうすることで、リグレッションテストのカバレッジが広がり、他のチームのためにコンポーネントの限界を明確に示すことができます。
+
+Task.stories.jsxに、長いテキストの場合の新しいストーリーを追加します
+
+``` jsx
+// src/components/Task.stories.jsx
+
+const longTitleString = `This task's name is absurdly large. In fact, I think if I keep going I might end up with content overflow. What will happen? The star that represents a pinned task could have text overlapping. The text could cut-off abruptly when it reaches the star. I hope not!`;
+
+export const LongTitle = {
+  args: {
+    task: {
+      ...Default.args.task,
+      title: longTitleString,
+    },
+  },
+};
+```
+
+これで、このエッジケースを簡単に再現して作業できるようになった。
+
+ビジュアル・テストであれば、切り捨ての解決策が破られた場合も通知される。極端なエッジケースは、テストカバレッジがないと忘れられがちです！
+
+💡 Controlsは、開発者以外の人にコンポーネントやストーリーを遊んでもらうのに最適です。ここで見た以上のことができます。公式ドキュメントを読んで、もっと詳しく知ることをお勧めします。しかし、アドオンを使ってワークフローに合わせてStorybookをカスタマイズできる方法は他にもたくさんあります。アドオンの作成ガイドでは、開発ワークフローを大幅に改善するアドオンを作成する方法を紹介します。
+
+### 変更をマージする
+変更をgitにマージすることを忘れないでください！
