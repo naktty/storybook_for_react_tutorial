@@ -31,7 +31,6 @@
     "init-msw": "msw init public/",
     "test-storybook": "test-storybook",
     "chromatic": "npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN"
-  }
   },
   "devDependencies": {
     "@storybook/addon-a11y": "^8.4.7",
