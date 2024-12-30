@@ -202,3 +202,98 @@ export const Error = {};
 エラー・ストーリーの問題はすぐに発見できる。正しい状態を表示する代わりに、タスクのリストを表示しているのだ。この問題を回避する1つの方法は、前章で行ったように、各状態に対してモックされたバージョンを提供することです。その代わりに、有名なAPIモッキング・ライブラリをStorybookアドオンと一緒に使うことで、この問題を解決します。
 
 ![alt text](../images/image7.png)
+
+## APIサービスのモック
+今回のアプリケーションはかなり単純で、リモートAPI呼び出しにあまり依存しないので、Mock Service WorkerとStorybookのMSWアドオンを使うことにする。Mock Service WorkerはAPIモッキング・ライブラリだ。サービス・ワーカーに依存してネットワーク・リクエストをキャプチャし、レスポンスにモック・データを提供する。
+
+Get startedセクションでアプリをセットアップすると、両方のパッケージもインストールされた。あとは、これらを設定し、ストーリーを更新して使用するだけだ。
+
+ターミナルで以下のコマンドを実行し、public フォルダ内に一般的なサービス ワーカーを生成します
+
+```bash
+yarn init-msw
+```
+
+```javascript
+// .storybook/preview.js
+
+
+import '../src/index.css';
+
+// Registers the msw addon
+import { initialize, mswLoader } from 'msw-storybook-addon';
+
+// Initialize MSW
+initialize();
+
+//👇 Configures Storybook to log the actions( onArchiveTask and onPinTask ) in the UI.
+/** @type { import('@storybook/react').Preview } */
+const preview = {
+  parameters: {
+    controls: {
+      matchers: {
+        color: /(background|color)$/i,
+        date: /Date$/,
+      },
+    },
+  },
+  loaders: [mswLoader],
+};
+
+export default preview;
+```
+
+最後に、InboxScreenストーリーを更新し、リモートAPIコールをモックするパラメーターを含める
+
+```jsx
+// src/components/InboxScreen.stories.jsx
+
+import InboxScreen from './InboxScreen';
+
+import store from '../lib/store';
+
+import { http, HttpResponse } from 'msw';
+
+import { MockedState } from './TaskList.stories';
+
+import { Provider } from 'react-redux';
+
+export default {
+  component: InboxScreen,
+  title: 'InboxScreen',
+  decorators: [(story) => <Provider store={store}>{story()}</Provider>],
+  tags: ['autodocs'],
+};
+
+export const Default = {
+  parameters: {
+    msw: {
+      handlers: [
+        http.get('https://jsonplaceholder.typicode.com/todos?userId=1', () => {
+          return HttpResponse.json(MockedState.tasks);
+        }),
+      ],
+    },
+  },  
+};
+
+export const Error = {
+  parameters: {
+    msw: {
+      handlers: [
+        http.get('https://jsonplaceholder.typicode.com/todos?userId=1', () => {
+          return new HttpResponse(null, {
+            status: 403,
+          });
+        }),
+      ],
+    },
+  },
+};
+```
+
+余談だが、特にGraphQLを使う場合、データを階層下に渡すのは正当なアプローチだ。800以上のストーリーとともにChromaticを構築してきた方法だ。
+
+ストーリーブックを確認すると、エラーストーリーが意図したとおりに動作していることがわかります。MSWはリモートAPIコールをインターセプトし、適切なレスポンスを提供しました。
+
+![alt text](../images/image8.png)
